@@ -6,10 +6,10 @@
 ;; Maintainer : Ashlynn Anderson <contact@pea.sh>
 ;; Created    : July 2022
 ;; Modified   : 2022
-;; Version    : 1.0.0
+;; Version    : 0.1.0
 ;; Keywords   : rescript languages mode tree-sitter
 ;; X-URL      : https://github.com/lambdadog/rescript-tree-sitter-mode
-;; Package-Requires: ((emacs "26.1") (tree-sitter "0.12.1") (tree-sitter-indent "0.1"))
+;; Package-Requires: ((emacs "26.1") (tree-sitter "0.12.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -50,45 +50,11 @@
   :type 'boolean
   :group 'rsts-mode)
 
+;; Doesn't do anything yet..
 (defcustom rsts-indent-offset 2
   "Indent offset for rsts-mode."
   :type 'integer
   :group 'rsts-mode)
-
-(defconst tree-sitter-indent-rsts-scopes
-  '((indent-all
-     ;; these nodes are always indented
-     . ())
-    (indent-rest
-     ;; if parent node is one of these and node is not first → indent
-     . ())
-    (indent-body
-     ;; if parent node is one of these and current node is in middle → indent
-     . ())
-    (multi-line-text
-     ;; if node is one of these, then don't modify the indent
-     ;; this is basically a peaceful way out by saying "this looks like something
-     ;; that cannot be indented using AST, so best I leave it as-is"
-     . ())
-    (aligned-siblings
-     ;; siblings (nodes with same parent) should be aligned to the first child
-     . ())
-    (paren-indent
-     ;; if parent node is one of these → indent to paren opener
-     . ())
-    (outdent
-     ;; these nodes always outdent (1 shift in opposite direction)
-     . ())
-    (align-char-to
-     ;; chaining char → node types we move parentwise to find the first chaining char
-     . ())
-    (align-to-node-line
-     ;; this group has lists of alist (node type . (node types... ))
-     ;; we move parentwise, searching for one of the node
-     ;; types associated with the key node type. if found,
-     ;; align key node with line where the ancestor node
-     ;; was found.
-     . ())))
 
 (defun rsts-mode--ensure-parser-then (cb)
   "Ensure parser exists, and if it doesn't then try to build it."
@@ -116,13 +82,14 @@
 ;;;###autoload
 (define-derived-mode rsts-mode prog-mode "ReScript[Tree Sitter]"
   (setq-local tree-sitter-hl-default-patterns
-	(with-temp-buffer
-	  (insert-file-contents
-	   (expand-file-name "highlights.scm" rsts-mode--lang-queries-dir))
-	  (buffer-string)))
+	      (with-temp-buffer
+		(insert-file-contents
+		 (expand-file-name "highlights.scm" rsts-mode--lang-queries-dir))
+		(buffer-string)))
   ;; Hack to make tree-sitter-hl-mode work
   (setq-local font-lock-defaults '(('t)))
-  ;; Until I write tree-sitter-indent rules
+  ;; TODO: indentation, take a look at
+  ;; https://github.com/helix-editor/helix/pull/1562
   (setq-local indent-line-function #'indent-relative)
   (rsts-mode--ensure-parser-then
    (lambda ()
